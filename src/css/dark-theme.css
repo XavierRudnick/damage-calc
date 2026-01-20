@@ -163,3 +163,29 @@ input.select2-input {
     */
     background: url('../js/vendor/select2/select2.png') no-repeat 100% -22px, var(--background);
 }
+
+/* Dark theme for Pokemon History */
+.dark-theme .pokemon-history {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.dark-theme .history-label {
+    color: #bbb;
+}
+
+.dark-theme .history-item {
+    background: #333;
+    border-color: #555;
+    color: var(--text);
+}
+
+.dark-theme .history-item:hover {
+    background: #2a3a52;
+    border-color: #58a6ff;
+}
+
+.dark-theme .history-item.active {
+    background: #1e3a5f;
+    border-color: #58a6ff;
+    font-weight: 500;
+}

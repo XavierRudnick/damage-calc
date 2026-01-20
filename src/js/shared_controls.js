@@ -585,6 +585,12 @@ $(".set-selector").change(function () {
 	var pokemon = pokedex[pokemonName];
 	if (pokemon) {
 		var pokeObj = $(this).closest(".poke-info");
+		
+		// Track Pokemon 2 history
+		if (pokeObj.prop("id") === "p2") {
+			addToPokemonHistory("p2", pokemonName);
+		}
+		
 		var isAutoTera =
 		(startsWith(pokemonName, "Ogerpon") && endsWith(pokemonName, "Tera")) ||
 		pokemonName === 'Terapagos-Stellar';
@@ -1610,7 +1616,124 @@ $(document).ready(function () {
 	$(".set-selector").val(getFirstValidSetOption().id);
 	$(".set-selector").change();
 	$(".terrain-trigger").bind("change keyup", getTerrainEffects);
+	
+	// Initialize Pokemon history
+	initializePokemonHistory();
 });
+
+/* Pokemon History Feature */
+var pokemonHistory = {
+	p2: []
+};
+
+function initializePokemonHistory() {
+	// Load history from localStorage if available
+	var savedHistory = localStorage.getItem('pokemonHistory');
+	if (savedHistory) {
+		try {
+			pokemonHistory = JSON.parse(savedHistory);
+			if (!pokemonHistory.p2) pokemonHistory.p2 = [];
+		} catch (e) {
+			pokemonHistory = { p2: [] };
+		}
+	}
+	updateHistoryDisplay('p2');
+}
+
+function addToPokemonHistory(side, pokemonName) {
+	if (!pokemonName || pokemonName === '') return;
+	
+	var history = pokemonHistory[side];
+	
+	// Remove if already exists (to move to front)
+	var existingIndex = history.indexOf(pokemonName);
+	if (existingIndex !== -1) {
+		history.splice(existingIndex, 1);
+	}
+	
+	// Add to front
+	history.unshift(pokemonName);
+	
+	// Keep only last 6
+	if (history.length > 6) {
+		history.pop();
+	}
+	
+	// Save to localStorage
+	localStorage.setItem('pokemonHistory', JSON.stringify(pokemonHistory));
+	
+	updateHistoryDisplay(side);
+}
+
+function updateHistoryDisplay(side) {
+	var historyContainer = $('#' + side + '-history .history-items');
+	if (!historyContainer.length) return;
+	
+	historyContainer.empty();
+	
+	var history = pokemonHistory[side];
+	for (var i = 0; i < history.length; i++) {
+		var pokemonName = history[i];
+		// Display a shorter name for better readability
+		var displayName = pokemonName.length > 25 ? pokemonName.substring(0, 22) + '...' : pokemonName;
+		var historyItem = $('<span class="history-item"></span>')
+			.text(displayName)
+			.attr('data-pokemon', pokemonName)
+			.attr('data-side', side)
+			.attr('title', pokemonName); // Add tooltip with full name
+		historyContainer.append(historyItem);
+	}
+}
+
+// Add click handler for history items
+$(document).on('click', '.history-item', function(e) {
+	e.preventDefault();
+	e.stopPropagation();
+	
+	var pokemonName = $(this).attr('data-pokemon');
+	var side = $(this).attr('data-side');
+	
+	// Remove active class from all history items on this side
+	$('#' + side + '-history .history-item').removeClass('active');
+	// Add active class to clicked item
+	$(this).addClass('active');
+	
+	console.log('History clicked:', pokemonName, 'on side:', side);
+	
+	var selector = $('#' + side + ' .set-selector');
+	
+	// Find the first set for this pokemon
+	var setOptions = getSetOptions();
+	var foundOption = null;
+	
+	for (var i = 0; i < setOptions.length; i++) {
+		var option = setOptions[i];
+		// Check if this option's pokemon name matches and has an id
+		if (option.pokemon === pokemonName && option.id) {
+			foundOption = option;
+			console.log('Found matching option:', foundOption);
+			break;
+		}
+	}
+	
+	if (foundOption) {
+		console.log('Setting selector to:', foundOption.id);
+		// Set the value directly and let select2 handle the rest
+		selector.val(foundOption.id);
+		// Force select2 to update its display from the value
+		selector.trigger('change.select2');
+		// Then trigger the actual change event for loading stats
+		setTimeout(function() {
+			selector.trigger('change');
+		}, 100);
+	} else {
+		console.log('ERROR: Set not found for:', pokemonName);
+		console.log('First 5 available options:', setOptions.slice(0, 5).map(function(o) { 
+			return {pokemon: o.pokemon, id: o.id}; 
+		}));
+	}
+});
+
 
 /* Click-to-copy function */
 $("#mainResult").click(function () {
