@@ -2,6 +2,19 @@
 
 Status: planning only. No ROM, save, or implementation changes have been made.
 
+## Executable task files
+
+Start at the [task index](plans/radical-red-damage-preview/README.md). The work is
+split into 12 task briefs across three milestones, with prerequisites, scoped
+deliverables, and acceptance checks for each task.
+
+To give a model one section, point it at that task's Markdown file and ask it to
+execute that task only. Each brief links the shared workflow and status record.
+The first task is [01 - ROM baseline](plans/radical-red-damage-preview/01-rom-baseline.md).
+
+The six phases below remain the design overview. The linked task files define
+the execution order and handoff requirements.
+
 ## Objective
 
 Display an accurate damage range for the highlighted attack inside Radical Red's
